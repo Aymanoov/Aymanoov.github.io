@@ -121,6 +121,7 @@
 
             const data = {
                 action: "web_app_multi_order",
+                chat_id: tg.initDataUnsafe?.user?.id, // جلب الـ ID الخاص بالمستخدم من تليجرام
                 client_name: document.getElementById('client_name').value,
                 client_phone: document.getElementById('client_phone').value,
                 elevator_type: document.getElementById('elevator_type').value,
@@ -134,8 +135,27 @@
                 return;
             }
 
-            tg.sendData(JSON.stringify(data));
-            tg.close();
+            // إرسال البيانات مباشرة إلى n8n
+            const webhookUrl = 'https://jubilance-body-luminance.ngrok-free.dev/webhook/order-submission';
+            
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => {
+                if (response.ok) {
+                    tg.close(); // إغلاق الفورم بعد النجاح
+                } else {
+                    alert("حدث خطأ في الإرسال، يرجى المحاولة لاحقاً");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("تعذر الاتصال بالسيرفر");
+            });
         });
     </script>
 </body>
